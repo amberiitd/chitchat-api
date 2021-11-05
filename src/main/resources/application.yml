@@ -1,0 +1,18 @@
+
+logging.level.org.springframework.messaging: DEBUG
+
+security:
+  oauth2:
+    server: http://localhost:8090
+    client:
+      client-id: chitchat-api
+      client-secret: secret
+    resource:
+      tokenInfoUri: ${security.oauth2.server}/oauth/check_token
+
+
+mongo:
+  connectionUrl: mongodb://localhost:27017
+  appDB: chitchat
+  userCollection: user
+  userPrefCollection: userPref
