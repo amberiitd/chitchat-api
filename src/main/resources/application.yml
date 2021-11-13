@@ -16,3 +16,9 @@ mongo:
   appDB: chitchat
   userCollection: user
   userPrefCollection: userPref
+  publicUserPrefCollection: publicUserPref
+
+default:
+  resourcePath: C:/Users/amber/inventory/chitchat
+  userIconPath: C:/Users/amber/inventory/chitchat/default-icon.png
+  staticPath : ${default.resourcePath}/static

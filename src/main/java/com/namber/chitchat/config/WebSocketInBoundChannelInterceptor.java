@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import sun.net.www.http.HttpClient;
 
 import javax.naming.AuthenticationException;
+import java.util.Base64;
 
 @Configuration
 @Slf4j
@@ -41,8 +42,14 @@ public class WebSocketInBoundChannelInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         if (SimpMessageType.CONNECT.equals(headerAccessor.getMessageType())){
-            String username = headerAccessor.getLogin();
-            String passcode = headerAccessor.getPasscode();
+
+            // extract username, password
+            String authHeader = headerAccessor.getFirstNativeHeader("Authorization");
+            authHeader = authHeader.replace("Basic ", "");
+            authHeader = new String(Base64.getDecoder().decode(authHeader));
+            String username = authHeader.substring(0, authHeader.indexOf(':'));
+            String passcode = authHeader.substring(authHeader.indexOf(':') +1, authHeader.length());
+
             try {
                 headerAccessor.setUser(authenticate(username, passcode));
             }catch (Exception e){

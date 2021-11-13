@@ -32,9 +32,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/v2/api-docs/**").permitAll()
                 .antMatchers("/info/**").permitAll()
+                .antMatchers("/chit-chat/**").permitAll()
                 .anyRequest().authenticated();
 
         http.httpBasic();
+        http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }

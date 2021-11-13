@@ -11,4 +11,5 @@ public class UserPreference {
     private String firstName;
     private String dpSrc;
     private List<People> conversations;
+    private List<People> contacts;
 }
