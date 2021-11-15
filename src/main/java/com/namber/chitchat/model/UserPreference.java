@@ -5,11 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UserPreference {
+public class UserPreference extends PublicUserPreference{
     private String username;
-    private String publicUsername;
-    private String firstName;
-    private String dpSrc;
     private List<People> conversations;
     private List<People> contacts;
 }

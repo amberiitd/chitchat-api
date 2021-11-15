@@ -1,6 +1,7 @@
 package com.namber.chitchat.service;
 
 import com.namber.chitchat.dao.MessageRepo;
+import com.namber.chitchat.model.Action;
 import com.namber.chitchat.model.Message;
 import com.namber.chitchat.model.MessageQuery;
 import com.namber.chitchat.model.OutputMessage;
@@ -110,5 +111,14 @@ public class MessageService {
                 userPrefService.getUsername(to),
                 userPrefService.getUsername(from),
                 endTime);
+    }
+
+    public void updateMessage(String action, List<Long> timestamps) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (Action.STAR.equals(action)){
+            msgRepo.updateStarred(user.getUsername(), timestamps);
+        }else if(Action.DELETE.equals(action)){
+            msgRepo.deleteMessage(user.getUsername(), timestamps);
+        }
     }
 }

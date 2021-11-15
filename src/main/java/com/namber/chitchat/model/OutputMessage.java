@@ -8,6 +8,8 @@ public class OutputMessage {
     private String from;
     private String text;
     private boolean notViewed;
+    private boolean deleted;
+    private boolean starred;
     private long timestamp;
     private long parentId; // timestamp for now
     private OutputMessage parent;

@@ -92,4 +92,20 @@ public class MessageRepo {
                 new Document("$set", new Document("notViewed", false))
         );
     }
+
+    public void updateStarred(String username, List<Long> timestamps){
+        String collection = MSG_COL_PRE+ username;
+        mongoClient.getDatabase(appDB).getCollection(collection).updateMany(
+                new Document("timestamp", new Document("$in", timestamps)),
+                Arrays.asList(new Document("$set", new Document("starred", new Document("$eq", Arrays.asList(false, "$starred")))))
+        );
+    }
+
+    public void deleteMessage(String username, List<Long> timestamps){
+        String collection = MSG_COL_PRE+ username;
+        mongoClient.getDatabase(appDB).getCollection(collection).updateMany(
+                new Document("timestamp", new Document("$in", timestamps)),
+                new Document("$set", new Document("deleted", true).append("text", "This message is deleted"))
+        );
+    }
 }

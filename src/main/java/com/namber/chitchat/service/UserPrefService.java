@@ -4,18 +4,25 @@ import com.namber.chitchat.dao.AppUserRepo;
 import com.namber.chitchat.model.People;
 import com.namber.chitchat.model.PublicUserPreference;
 import com.namber.chitchat.model.UserPreference;
+import com.namber.chitchat.model.dto.PeopleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.stream.Collectors;
 
 @Service
 public class UserPrefService {
     @Autowired
     private AppUserRepo userRepo;
+
+    @Value("${default.userIconPath}")
+    private String defaultIconPath;
 
 
     public String getPublicUsername(String username) {
@@ -73,6 +80,37 @@ public class UserPrefService {
         userRepo.pushToUserPrefConv(user.getUsername(), publicContact);
     }
 
+    public PeopleDTO findPeople(String publicUsername) {
+        PublicUserPreference userPref = userRepo.findPublicUserPref(publicUsername);
+        if(userPref != null){
+            PeopleDTO peopleDTO = new PeopleDTO();
+            peopleDTO.setStatus(userPref.getStatus());
+            peopleDTO.setNickName(userPref.getFirstName());
+            try{
+                peopleDTO.setDp(Files.readAllBytes(new File(userPref.getDpSrc()).toPath()));
+            }catch (Exception e){
+                // add default dp
+                try{
+                    peopleDTO.setDp(Files.readAllBytes(new File(defaultIconPath).toPath()));
+                }catch (Exception e2){
 
+                }
+            }
+            return peopleDTO;
+        }else{
+            return null;
+        }
+    }
 
+    public void addContact(String publicUsername, String nickName) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        PublicUserPreference userPref = userRepo.findPublicUserPref(publicUsername);
+        People people = new People();
+        people.setDpSrc(userPref.getDpSrc());
+        people.setNickName(nickName);
+        people.setPublicUsername(userPref.getPublicUsername());
+
+        userRepo.pushToUserPrefContact(user.getUsername(), people);
+    }
 }

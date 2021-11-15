@@ -1,9 +1,6 @@
 package com.namber.chitchat.controller;
 
-import com.namber.chitchat.model.MessageQuery;
-import com.namber.chitchat.model.OutputMessage;
-import com.namber.chitchat.model.People;
-import com.namber.chitchat.model.UINotification;
+import com.namber.chitchat.model.*;
 import com.namber.chitchat.model.dto.AppUserDTO;
 import com.namber.chitchat.model.dto.PeopleDTO;
 import com.namber.chitchat.service.AppDataService;
@@ -65,6 +62,11 @@ public class DataController {
         this.userPrefService.addConversation(publicUsername);
     }
 
+    @PostMapping("/add-contact")
+    public void addContact(@RequestParam String publicUsername, @RequestParam String nickName){
+        this.userPrefService.addContact(publicUsername, nickName);
+    }
+
     @GetMapping("/contacts")
     public List<PeopleDTO> getContacts(){
         return dataService.getContacts();
@@ -73,5 +75,15 @@ public class DataController {
     @GetMapping(value = "notif-sound", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public byte[] getNotifSound(){
         return dataService.getNotifSound();
+    }
+
+    @PostMapping("/msg-action")
+    public  void processMessage(@RequestBody Action action){
+        messageService.updateMessage(action.getName(), action.getTimestamps());
+    }
+
+    @GetMapping("/people")
+    public PeopleDTO findPeople(@RequestParam String publicUsername){
+        return this.userPrefService.findPeople(publicUsername);
     }
 }

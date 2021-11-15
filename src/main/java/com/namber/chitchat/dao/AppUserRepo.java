@@ -1,5 +1,6 @@
 package com.namber.chitchat.dao;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
 import com.google.gson.Gson;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -96,5 +97,22 @@ public class AppUserRepo {
     public PublicUserPreference getPublicUserPref(String publicUsername) {
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.publicUserPrefCollection);
         return mapper.map(userPrefCollection.find(new Document(PUBLIC_USERNAME, publicUsername)).first(), PublicUserPreference.class);
+    }
+
+    public PublicUserPreference findPublicUserPref(String publicUsername) {
+        MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.publicUserPrefCollection);
+        try{
+           return mapper.map(userPrefCollection.find(new Document(PUBLIC_USERNAME, publicUsername)).first(), PublicUserPreference.class);
+        }catch (Exception e){
+            return null;
+        }
+    }
+
+    public void pushToUserPrefContact(String username, People people) {
+        MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
+        userPrefCollection.updateOne(
+                new Document(USERNAME, username),
+                new Document("$push", new Document("contacts", Document.parse(gson.toJson(people))))
+        );
     }
 }
