@@ -97,8 +97,10 @@ public class MessageService {
     }
 
     public OutputMessage getParent(OutputMessage msg){
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         MessageQuery pQuery = new MessageQuery();
-        pQuery.setUsername(userPrefService.getUsername(msg.getFrom()));
+        pQuery.setUsername(user.getUsername());
         pQuery.setFrom(msg.getFrom());
         pQuery.setTimestamp(msg.getParentId());
         pQuery.setCount(1);
@@ -121,4 +123,10 @@ public class MessageService {
             msgRepo.deleteMessage(user.getUsername(), timestamps);
         }
     }
+
+    public void deleteMessages(String publicUsername) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        msgRepo.deleteMessages(user.getUsername(), publicUsername);
+    }
+
 }

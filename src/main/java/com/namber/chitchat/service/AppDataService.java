@@ -1,8 +1,5 @@
 package com.namber.chitchat.service;
 
-import com.namber.chitchat.dao.AppUserRepo;
-import com.namber.chitchat.model.AppUser;
-import com.namber.chitchat.model.People;
 import com.namber.chitchat.model.UserPreference;
 import com.namber.chitchat.model.dto.AppUserDTO;
 import com.namber.chitchat.model.dto.PeopleDTO;
@@ -17,11 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -111,7 +106,7 @@ public class AppDataService {
         if (user == null){
             return null;
         }
-        return userPrefService.getUserPrefByUsername(user.getUsername());
+        return userPrefService.getUserPref(user.getUsername());
     }
 
     public byte[] getNotifSound() {

@@ -55,11 +55,15 @@ public class WebSocketController {
             //persist to reciever collection
             messageService.save(inMsg.getTo(), msg);
 
+            //create conv if does not exist
+            userPrefService.setPeople(inMsg.getTo(), inMsg.getFrom());
+
             //update unseen of reciever
             userPrefService.incUnseenCount(inMsg.getTo(), inMsg.getFrom());
 
             //update notViewed of reciever
             userPrefService.incNotViewedCount(inMsg.getTo(), inMsg.getFrom());
+
         }
 
     }

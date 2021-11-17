@@ -9,6 +9,8 @@ import com.namber.chitchat.service.UserPrefService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,14 +59,22 @@ public class DataController {
             this.simpMessagingTemplate.convertAndSendToUser(notif.getFrom(), "/queue/msg", outMsg);
         }
     }
+
+    @PostMapping("/pin-conv")
+    public void pinChat(@RequestParam String publicUsername, @RequestParam long stamp){
+        userPrefService.updatePinned(publicUsername, stamp);
+    }
+
     @PostMapping("/add-conv")
     public void addConv(@RequestParam String publicUsername){
-        this.userPrefService.addConversation(publicUsername);
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        this.userPrefService.addConversation(userPrefService.getPublicUsername(user.getUsername()), publicUsername);
     }
 
     @PostMapping("/add-contact")
     public void addContact(@RequestParam String publicUsername, @RequestParam String nickName){
-        this.userPrefService.addContact(publicUsername, nickName);
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        this.userPrefService.addContact(userPrefService.getPublicUsername(user.getUsername()), publicUsername, nickName);
     }
 
     @GetMapping("/contacts")
@@ -85,5 +95,26 @@ public class DataController {
     @GetMapping("/people")
     public PeopleDTO findPeople(@RequestParam String publicUsername){
         return this.userPrefService.findPeople(publicUsername);
+    }
+
+    @GetMapping("/login")
+    public String login(){
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(user != null){
+            return user.getUsername();
+        }else {
+            return null;
+        }
+    }
+
+    @PostMapping("/delete")
+    public  void deleteAction(@RequestBody DeleteRequest request){
+        if ("messages".equals(request.getTargetType())){
+            messageService.deleteMessages(request.getPublicUsername());
+        }
+        if("chat".equals(request.getTargetType())){
+            userPrefService.deleteChat(request.getPublicUsername());
+        }
     }
 }

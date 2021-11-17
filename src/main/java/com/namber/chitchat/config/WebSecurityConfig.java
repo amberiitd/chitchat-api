@@ -33,6 +33,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/v2/api-docs/**").permitAll()
                 .antMatchers("/info/**").permitAll()
                 .antMatchers("/chit-chat/**").permitAll()
+                .antMatchers("/check-exist").permitAll()
+                .antMatchers("/signup").permitAll()
+
                 .anyRequest().authenticated();
 
         http.httpBasic();

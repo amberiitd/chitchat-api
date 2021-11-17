@@ -9,4 +9,5 @@ public class People {
     private String dpSrc;
     private int unseenCount = 0;
     private int notViewedCount = 0;
+    private long pinned =0;
 }

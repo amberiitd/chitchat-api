@@ -108,4 +108,13 @@ public class MessageRepo {
                 new Document("$set", new Document("deleted", true).append("text", "This message is deleted"))
         );
     }
+
+    public void deleteMessages(String username, String from) {
+        String collection = MSG_COL_PRE+ username;
+        List<Document> orList= Arrays.asList(
+                new Document(FROM, from),
+                new Document(TO, from)
+        );
+        mongoClient.getDatabase(appDB).getCollection(collection).deleteMany(new Document("$or", orList));
+    }
 }

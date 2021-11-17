@@ -1,6 +1,5 @@
 package com.namber.chitchat.dao;
 
-import ch.qos.logback.core.encoder.EchoEncoder;
 import com.google.gson.Gson;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import javax.print.Doc;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,33 +49,53 @@ public class AppUserRepo {
         return mapper.map(userCollection.find(new Document(USERNAME, username)).first(), AppUser.class);
     }
 
-    public UserPreference getUserPrefByUsername(String username) {
+    public UserPreference getUserPref(String username) {
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
-        return mapper.map(userPrefCollection.find(new Document(USERNAME, username)).first(), UserPreference.class);
+        List<Document> orList= Arrays.asList(
+                new Document(PUBLIC_USERNAME, username),
+                new Document(USERNAME, username)
+        );
+
+        Document doc = userPrefCollection.find(new Document("$or", orList)).first();
+        if(doc != null) {
+            return mapper.map(doc, UserPreference.class);
+        }
+
+        return null;
     }
 
-    public UserPreference getUserPrefByPublicUsername(String username) {
+    public UserPreference getUserPrefByPublicUsername(String publicUsername) {
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
-        return mapper.map(userPrefCollection.find(new Document(PUBLIC_USERNAME, username)).first(), UserPreference.class);
+        Document doc = userPrefCollection.find(new Document(PUBLIC_USERNAME, publicUsername)).first();
+        if(doc != null) {
+            return mapper.map(doc, UserPreference.class);
+        }
+
+        return null;
     }
 
     public void incUserPrefUnseenCount(String to, String from, int add){
-        updateUserPrefUnseenCount("unseenCount", to, from, "$inc", add);
+        updateUserPrefConv("unseenCount", to, from, "$inc", add);
     }
 
     public void incUserPrefNotViewedCount(String to, String from, int add) {
-        updateUserPrefUnseenCount("notViewedCount", from, to, "$inc", add);
+        updateUserPrefConv("notViewedCount", from, to, "$inc", add);
     }
 
     public void unsetUserPrefUnseenCount(String to, String from){
-        updateUserPrefUnseenCount("unseenCount", to, from, "$set", 0);
+        updateUserPrefConv("unseenCount", to, from, "$set", 0);
     }
 
     public void unsetUserPrefNotViewedCount(String to, String from) {
-        updateUserPrefUnseenCount("notViewedCount", from, to, "$set", 0);
+        updateUserPrefConv("notViewedCount", from, to, "$set", 0);
     }
 
-    private void updateUserPrefUnseenCount(String att, String user, String other, String op, int val){
+    public void updateUserPrefPinned(String user, String people, long val) {
+        updateUserPrefConv("pinned", user, people, "$set", val);
+    }
+
+
+    private void updateUserPrefConv(String att, String user, String other, String op, long val){
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
         userPrefCollection.updateOne(
                 new Document(PUBLIC_USERNAME, user),
@@ -89,7 +107,7 @@ public class AppUserRepo {
     public void pushToUserPrefConv(String username, People conv){
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
         userPrefCollection.updateOne(
-                new Document(USERNAME, username),
+                new Document(PUBLIC_USERNAME, username),
                 new Document("$push", new Document("conversations", Document.parse(gson.toJson(conv))))
         );
     }
@@ -111,8 +129,43 @@ public class AppUserRepo {
     public void pushToUserPrefContact(String username, People people) {
         MongoCollection<Document> userPrefCollection = mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection);
         userPrefCollection.updateOne(
-                new Document(USERNAME, username),
+                new Document(PUBLIC_USERNAME, username),
                 new Document("$push", new Document("contacts", Document.parse(gson.toJson(people))))
+        );
+    }
+
+    public void saveUser(AppUser user) {
+        mongoClient.getDatabase(appDB).getCollection(this.userCollection)
+                .insertOne(Document.parse(gson.toJson(user)));
+    }
+
+    public void saveUserPrefence(UserPreference userPreference) {
+        mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection)
+                .insertOne(Document.parse(gson.toJson(userPreference)));
+    }
+
+    public void savePublicUserPrefence(PublicUserPreference publicUserPreference) {
+        mongoClient.getDatabase(appDB).getCollection(this.publicUserPrefCollection)
+                .insertOne(Document.parse(gson.toJson(publicUserPreference)));
+    }
+
+    public void deleteChat(String username, String publicUsername) {
+        mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection)
+            .updateOne(
+                new Document(USERNAME, username),
+                new Document("$pull", new Document("conversations", new Document(PUBLIC_USERNAME, publicUsername)))
+            );
+    }
+
+    public long convExists(String user, String from){
+        return mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection).count(
+                new Document(PUBLIC_USERNAME, user).append("conversations", new Document("$elemMatch", new Document(PUBLIC_USERNAME, from)))
+        );
+    }
+
+    public long contactExists(String user, String from){
+        return mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection).count(
+                new Document(PUBLIC_USERNAME, user).append("contacts", new Document("$elemMatch", new Document(PUBLIC_USERNAME, from)))
         );
     }
 }

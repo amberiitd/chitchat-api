@@ -12,4 +12,5 @@ public class PeopleDTO {
     private int unseenCount =0;
     private int notViewedCount =0;
     private String status;
+    private long pinned = 0L;
 }

@@ -8,4 +8,5 @@ public class AppUserDTO {
     private String firstName;
     private String lastName;
     private byte[] dp;
+    private String status;
 }
