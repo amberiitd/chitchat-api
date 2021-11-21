@@ -19,5 +19,5 @@ mongo:
   publicUserPrefCollection: publicUserPref
 
 default:
-  resourcePath: C:/Users/amber/backend/chitchat/src/main/resources/media
+  resourcePath: /home/nazishamber_ch_iitd/projects/chitchat/src/main/resources/media
   userIconPath: ${default.resourcePath}/default-icon.png
