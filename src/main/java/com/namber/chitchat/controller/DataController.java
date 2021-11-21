@@ -116,5 +116,9 @@ public class DataController {
         if("chat".equals(request.getTargetType())){
             userPrefService.deleteChat(request.getPublicUsername());
         }
+
+        if("contact".equals(request.getTargetType())){
+            userPrefService.deleteContact(request.getPublicUsername());
+        }
     }
 }

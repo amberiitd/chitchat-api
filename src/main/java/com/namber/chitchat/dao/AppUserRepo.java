@@ -168,4 +168,12 @@ public class AppUserRepo {
                 new Document(PUBLIC_USERNAME, user).append("contacts", new Document("$elemMatch", new Document(PUBLIC_USERNAME, from)))
         );
     }
+
+    public void deleteContact(String username, String publicUsername) {
+        mongoClient.getDatabase(appDB).getCollection(this.userPrefCollection)
+                .updateOne(
+                        new Document(USERNAME, username),
+                        new Document("$pull", new Document("contacts", new Document(PUBLIC_USERNAME, publicUsername)))
+                );
+    }
 }

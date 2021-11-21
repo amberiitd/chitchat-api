@@ -175,4 +175,9 @@ public class UserPrefService {
         this.addContact(user, people, people);
         this.addConversation(user, people);
     }
+
+    public void deleteContact(String publicUsername) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userRepo.deleteContact(user.getUsername(), publicUsername);
+    }
 }
