@@ -31,11 +31,11 @@ public class AppDataService {
     @Autowired
     ModelMapper mapper;
 
+    @Value("${default.resourcePath}")
+    private String resourcePath;
+
     @Value("${default.userIconPath}")
     private String defaultIconPath;
-
-    @Value("${default.staticPath}")
-    private String staticPath;
 
     public List<PeopleDTO> getConversations() {
         List<PeopleDTO> peopleDTOList = new ArrayList<>();
@@ -111,7 +111,7 @@ public class AppDataService {
 
     public byte[] getNotifSound() {
         try{
-            byte[] data = IOUtils.toByteArray(new FileInputStream(staticPath + "/notification.mp3"));
+            byte[] data = IOUtils.toByteArray(new FileInputStream(resourcePath + "/notification.mp3"));
 
             return data;
         }catch (Exception e){
