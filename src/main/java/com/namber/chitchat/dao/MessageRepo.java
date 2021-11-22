@@ -80,15 +80,17 @@ public class MessageRepo {
 
     public void setViewed(String to, String from, long endTime) {
         // notif sender
-        String collection = MSG_COL_PRE+ to;
-        mongoClient.getDatabase(appDB).getCollection(collection).updateMany(
-                new Document("timestamp", new Document("$lte", endTime)).append("notViewed", true),
-                new Document("$set", new Document("notViewed", false))
-            );
+//        String collection = MSG_COL_PRE+ to;
+//        mongoClient.getDatabase(appDB).getCollection(collection).updateMany(
+//                new Document("timestamp", new Document("$lte", endTime)).append("notViewed", true),
+//                new Document("$set", new Document("notViewed", false))
+//            );
         // notif reciever
-        collection = MSG_COL_PRE+ from;
+        String collection = MSG_COL_PRE+ from;
         mongoClient.getDatabase(appDB).getCollection(collection).updateMany(
-                new Document("timestamp", new Document("$lte", endTime)).append("notViewed", true),
+                new Document("timestamp", new Document("$lte", endTime))
+                        .append(TO, to)
+                        .append("notViewed", true),
                 new Document("$set", new Document("notViewed", false))
         );
     }
