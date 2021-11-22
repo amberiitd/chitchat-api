@@ -43,7 +43,6 @@ public class WebSocketController {
         if (outMsg.getParentId() > 0){
             outMsg.setParent(messageService.getParent(outMsg));
         }
-        this.simpMessagingTemplate.convertAndSendToUser(inMsg.getTo(), "/queue/msg", outMsg);
 
         if( inMsg.getType().equals("message") ){
             //persist to sender collection
@@ -64,7 +63,13 @@ public class WebSocketController {
             //update notViewed of reciever
             userPrefService.incNotViewedCount(inMsg.getTo(), inMsg.getFrom());
 
+            OutputMessage confirmSent = new OutputMessage();
+            confirmSent.setType("msg_sent");
+            confirmSent.setTimestamp(inMsg.getTimestamp());
+            confirmSent.setFrom(inMsg.getFrom());
+            this.simpMessagingTemplate.convertAndSendToUser(inMsg.getFrom(), "/queue/msg", confirmSent);
         }
 
+        this.simpMessagingTemplate.convertAndSendToUser(inMsg.getTo(), "/queue/msg", outMsg);
     }
 }

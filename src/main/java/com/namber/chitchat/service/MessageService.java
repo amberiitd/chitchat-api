@@ -110,7 +110,7 @@ public class MessageService {
 
     public void setViewed(String to, String from, long endTime){
         msgRepo.setViewed(
-                userPrefService.getUsername(to),
+                to,
                 userPrefService.getUsername(from),
                 endTime);
     }
