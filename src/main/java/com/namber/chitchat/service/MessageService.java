@@ -1,10 +1,7 @@
 package com.namber.chitchat.service;
 
 import com.namber.chitchat.dao.MessageRepo;
-import com.namber.chitchat.model.Action;
-import com.namber.chitchat.model.Message;
-import com.namber.chitchat.model.MessageQuery;
-import com.namber.chitchat.model.OutputMessage;
+import com.namber.chitchat.model.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class MessageService {
@@ -26,8 +24,20 @@ public class MessageService {
     @Autowired
     private ModelMapper mapper;
 
-    public void save(String publicUsername, Message msg) {
-        msgRepo.save(userPrefService.getUsername(publicUsername), msg);
+    public void save(InputMessage inMsg) {
+        String user;
+
+        Message msg = mapper.map(inMsg, Message.class);
+        msg.setTo(inMsg.getTo());
+        msg.setMessageId(UUID.randomUUID().toString());
+
+        //save in sender
+        user = userPrefService.getUsername(inMsg.getFrom());
+        msgRepo.save(user, msg);
+
+        //save in reciever
+        user = userPrefService.getUsername(inMsg.getTo());
+        msgRepo.save(user, msg);
     }
 
     public OutputMessage getLastMessage(String username, String from) {

@@ -13,4 +13,5 @@ public class InputMessage extends OutputMessage{
     private boolean starred;
     private long timestamp;
     private long parentId; // timestamp for now
+    private long poll= 0L;
 }
