@@ -40,19 +40,20 @@ public class WebSocketController {
 //    @SendToUser("/queue/msg")
     public void sentoUser(SimpMessageHeaderAccessor sha, @Payload InputMessage inMsg){
         OutputMessage outMsg = mapper.map(inMsg, OutputMessage.class);
-        if (outMsg.getParentId() > 0){
-            outMsg.setParent(messageService.getParent(outMsg));
-        }
 
         if( inMsg.getType().equals("message") ){
-            //persist to sender collection
-            Message msg = mapper.map(outMsg, Message.class);
-            msg.setTo(inMsg.getTo());
-            msg.setMessageId(UUID.randomUUID().toString());
-            messageService.save(inMsg.getFrom(), msg);
+            if(inMsg.getPoll() > 1L){
+                OutputMessage lastMessage = messageService.getLastMessage(userPrefService.getUsername(inMsg.getTo()), inMsg.getFrom());
+                if(lastMessage.getTimestamp() == inMsg.getTimestamp()){
+                    return;
+                }
+            }
 
-            //persist to reciever collection
-            messageService.save(inMsg.getTo(), msg);
+            if (outMsg.getParentId() > 0){
+                outMsg.setParent(messageService.getParent(outMsg));
+            }
+            //persist to sender & reciever collection
+            messageService.save(inMsg);
 
             //create conv if does not exist
             userPrefService.setPeople(inMsg.getTo(), inMsg.getFrom());
@@ -60,7 +61,7 @@ public class WebSocketController {
             //update unseen of reciever
             userPrefService.incUnseenCount(inMsg.getTo(), inMsg.getFrom());
 
-            //update notViewed of reciever
+            //update notViewed of sender
             userPrefService.incNotViewedCount(inMsg.getTo(), inMsg.getFrom());
 
             OutputMessage confirmSent = new OutputMessage();
@@ -68,8 +69,10 @@ public class WebSocketController {
             confirmSent.setTimestamp(inMsg.getTimestamp());
             confirmSent.setFrom(inMsg.getFrom());
             this.simpMessagingTemplate.convertAndSendToUser(inMsg.getFrom(), "/queue/msg", confirmSent);
+            this.simpMessagingTemplate.convertAndSendToUser(inMsg.getTo(), "/queue/msg", outMsg);
+        }else{
+            this.simpMessagingTemplate.convertAndSendToUser(inMsg.getTo(), "/queue/msg", outMsg);
         }
 
-        this.simpMessagingTemplate.convertAndSendToUser(inMsg.getTo(), "/queue/msg", outMsg);
     }
 }
