@@ -107,10 +107,10 @@ public class MessageService {
     }
 
     public OutputMessage getParent(OutputMessage msg){
-        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username  = userPrefService.getUsername(msg.getFrom());
 
         MessageQuery pQuery = new MessageQuery();
-        pQuery.setUsername(user.getUsername());
+        pQuery.setUsername(username);
         pQuery.setFrom(msg.getFrom());
         pQuery.setTimestamp(msg.getParentId());
         pQuery.setCount(1);
